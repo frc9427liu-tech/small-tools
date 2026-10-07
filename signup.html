@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>報名統計小幫手</title>
+<style>
+:root{--bg:#faf9f6;--fg:#1d1d1b;--mut:#6b6a66;--card:#fff;--line:#e4e2dc;--acc:#2f6f4f}
+@media(prefers-color-scheme:dark){:root{--bg:#171715;--fg:#efede8;--mut:#9b9992;--card:#222220;--line:#34332f;--acc:#6fbf94}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 16px}
+h1{font-size:1.4rem;margin:0 0 4px}p.s{color:var(--mut);margin:0 0 16px}
+textarea{width:100%;min-height:160px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
+button{margin:8px 8px 0 0;padding:10px 16px;border:0;border-radius:8px;background:var(--acc);color:#fff;font:inherit;cursor:pointer}
+button.g{background:var(--card);color:var(--fg);border:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin-top:16px}
+.n{font-size:2rem;font-weight:700;color:var(--acc)}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+.w{color:#b3402a}
+</style></head><body><main>
+<h1>報名統計小幫手</h1>
+<p class="s">貼上報名留言(一行一人,可寫「王小明 2」「王小明+2」代表人數),自動去重、加總、找出疑似重複。</p>
+<textarea id="in" placeholder="王小明&#10;陳美美 2&#10;林大同+3&#10;王小明"></textarea>
+<div><label>名額上限 <input id="cap" type="number" min="0" placeholder="不限" style="width:80px;padding:6px"></label></div>
+<button id="go">統計</button><button class="g" id="cp">複製名單</button><button class="g" id="ex">載入範例</button>
+<div class="card"><div class="n" id="tot">0</div>總人數 <span id="msg"></span></div>
+<div class="card"><table><thead><tr><th>#</th><th>姓名</th><th>人數</th><th>備註</th></tr></thead><tbody id="tb"></tbody></table></div>
+<script>
+const $=id=>document.getElementById(id);
+function parse(t){const m=new Map();for(const raw of t.split(/\n/)){const l=raw.trim();if(!l)continue;
+ const r=l.match(/^(.*?)[\s+x×＋]*?(\d+)\s*(人|位|個)?$/i);let name=l,n=1;
+ if(r&&r[1].trim()){name=r[1].trim();n=parseInt(r[2],10)}
+ const o=m.get(name)||{n:0,c:0};o.n+=n;o.c++;m.set(name,o)}return m}
+function run(){const m=parse($('in').value),cap=parseInt($('cap').value)||0;let tot=0,rows='',i=0;
+ for(const[k,v]of m){i++;tot+=v.n;rows+=`<tr><td>${i}</td><td>${k.replace(/[<>&]/g,'')}</td><td>${v.n}</td><td class="w">${v.c>1?'重複報名 '+v.c+' 次':''}</td></tr>`}
+ $('tb').innerHTML=rows;$('tot').textContent=tot;$('msg').textContent=cap?(tot>cap?'⚠️ 超過名額 '+(tot-cap):'還剩 '+(cap-tot)+' 個'):''}
+$('go').onclick=run;$('in').oninput=run;$('cap').oninput=run;
+$('ex').onclick=()=>{$('in').value='王小明\n陳美美 2\n林大同+3\n王小明\n李佳穎 x2';run()};
+$('cp').onclick=()=>{const m=parse($('in').value);let s='';let i=0;for(const[k,v]of m)s+=(++i)+'. '+k+' ×'+v.n+'\n';navigator.clipboard&&navigator.clipboard.writeText(s)};
+</script></main></body></html>

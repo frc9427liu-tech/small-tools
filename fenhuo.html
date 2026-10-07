@@ -1,0 +1,850 @@
+<title>分貨小幫手</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+  :root {
+    --bg: #FBF8F4;
+    --surface: #FFFFFF;
+    --surface-2: #F3EEE8;
+    --ink: #241E19;
+    --ink-soft: #7C6F65;
+    --line: #E4DCD2;
+    --accent: #0E6B62;
+    --accent-soft: #DCEEEB;
+    --ok: #2F7A3E;
+    --ok-soft: #E1F0E3;
+    --warn: #A8540C;
+    --warn-soft: #FBEBDA;
+    --gem: #63389B;
+    --gem-soft: #EDE4F8;
+    --shadow: 0 1px 2px rgba(36, 30, 25, .06), 0 6px 20px rgba(36, 30, 25, .06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161210;
+      --surface: #201B17;
+      --surface-2: #2A241E;
+      --ink: #F3ECE4;
+      --ink-soft: #A79A8E;
+      --line: #362E27;
+      --accent: #46AFA2;
+      --accent-soft: #143430;
+      --ok: #6DBC7C;
+      --ok-soft: #17301B;
+      --warn: #E0983F;
+      --warn-soft: #34240F;
+      --gem: #B195E8;
+      --gem-soft: #241839;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #161210;
+    --surface: #201B17;
+    --surface-2: #2A241E;
+    --ink: #F3ECE4;
+    --ink-soft: #A79A8E;
+    --line: #362E27;
+    --accent: #46AFA2;
+    --accent-soft: #143430;
+    --ok: #6DBC7C;
+    --ok-soft: #17301B;
+    --warn: #E0983F;
+    --warn-soft: #34240F;
+    --gem: #B195E8;
+    --gem-soft: #241839;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 0 48px;
+  }
+
+  /* ---------- 頂部 ---------- */
+  .top {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-in {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand {
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: .02em;
+    margin-right: auto;
+  }
+  .brand span { color: var(--accent); }
+
+  .ghost {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* 進度 */
+  .prog { padding: 0 16px 12px; max-width: 560px; margin: 0 auto; }
+  .prog-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .prog-row b { color: var(--ink); font-size: 20px; font-weight: 900; }
+  .bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width .25s ease;
+  }
+
+  /* ---------- 設定畫面 ---------- */
+  .lede {
+    margin: 24px 0 20px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    text-wrap: pretty;
+  }
+  .lede strong { color: var(--ink); }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -.01em;
+    margin: 28px 0 0;
+    text-wrap: balance;
+  }
+
+  .field { display: grid; gap: 8px; }
+  .label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--ink-soft);
+  }
+  textarea {
+    width: 100%;
+    min-height: 240px;
+    resize: vertical;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .hint {
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 16px;
+  }
+  .hint b { color: var(--ink); }
+  .hint pre {
+    margin: 10px 0 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .tally {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .tally > div {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    flex: 1 1 0;
+    min-width: 96px;
+  }
+  .tally em {
+    display: block;
+    font-style: normal;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .tally b { font-size: 22px; font-weight: 900; }
+
+  .go {
+    width: 100%;
+    margin-top: 20px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 16px;
+  }
+  .go[disabled] { background: var(--surface-2); color: var(--ink-soft); cursor: not-allowed; }
+
+  .mini {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .linkish {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: 13px;
+  }
+
+  /* ---------- 分頁 ---------- */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 4px;
+    margin: 20px 0 18px;
+  }
+  .tabs button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    padding: 9px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .tabs button[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+
+  .list { display: grid; gap: 14px; }
+  .group { display: grid; gap: 6px; justify-items: end; }
+  .group > .card { justify-self: stretch; }
+  .ghost.tiny { padding: 4px 10px; font-size: 12px; }
+
+  .card {
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: center;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card.done { background: var(--ok-soft); border-color: transparent; }
+
+  .card-name {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .card-sub {
+    grid-column: 1;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .card-count {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .card.done .card-count { color: var(--ok); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; grid-column: 1; }
+  .chip {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 3px 9px;
+    letter-spacing: .03em;
+  }
+  .chip.gem { background: var(--gem-soft); color: var(--gem); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .flagbar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .flagbar button {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .flagbar button[aria-pressed="true"].gem { background: var(--gem-soft); color: var(--gem); border-color: transparent; }
+  .flagbar button[aria-pressed="true"].warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+
+  .done-banner {
+    background: var(--ok-soft);
+    color: var(--ok);
+    border-radius: 14px;
+    padding: 16px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .done-banner small { display: block; font-weight: 400; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ---------- 專注模式 ---------- */
+  .focus {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .focus-head {
+    padding: 14px 16px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .focus-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .focus-title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .alert {
+    margin-top: 12px;
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .alert.gem { background: var(--gem-soft); color: var(--gem); }
+
+  .focus-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 24px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: left;
+  }
+  .row.done { background: var(--ok-soft); border-color: transparent; }
+  .row-name {
+    font-size: 21px;
+    font-weight: 700;
+    flex: 1;
+    overflow-wrap: anywhere;
+  }
+  .row.done .row-name { color: var(--ok); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .row-qty {
+    font-size: 21px;
+    font-weight: 900;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .row.done .row-qty { color: var(--ok); }
+  .box {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 2px solid var(--line);
+    display: grid;
+    place-items: center;
+    flex: none;
+    font-size: 20px;
+    color: transparent;
+  }
+  .row.done .box { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+  .confirm {
+    background: var(--gem-soft);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+  .confirm p { margin: 0; font-size: 16px; font-weight: 700; color: var(--gem); }
+  .confirm div { display: flex; gap: 8px; }
+  .confirm button {
+    flex: 1;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .confirm .yes { background: var(--gem); color: #fff; }
+  .confirm .no { background: var(--surface); color: var(--ink-soft); border: 1px solid var(--line); }
+
+  .focus-foot {
+    border-top: 1px solid var(--line);
+    padding: 12px 16px;
+    background: var(--surface);
+  }
+  .focus-foot button {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px;
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="top">
+  <div class="top-in">
+    <div class="brand">分貨<span>小幫手</span></div>
+    <button class="ghost" id="reset" hidden>重新開始</button>
+  </div>
+  <div class="prog" id="prog" hidden>
+    <div class="prog-row"><b class="num" id="progNum">0 / 0</b><span>件已分好</span></div>
+    <div class="bar"><i id="progBar" style="width:0%"></i></div>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+<div id="overlay"></div>
+
+<script>
+  "use strict";
+
+  const KEY = "fenhuo-v1";
+
+  const SAMPLE = [
+    "愛馬仕 尼羅河花園 淡香水 50ml",
+    "王小明 1",
+    "陳美美 2",
+    "",
+    "Jo Malone 藍風鈴 淡香水 30ml",
+    "陳美美 1",
+    "林大同 1",
+    "",
+    "POLA 護手霜",
+    "王小明 2",
+    "李佳穎 3",
+    "陳美美 1",
+    "",
+    "資生堂 洗面乳",
+    "林大同 2",
+    "李佳穎 1"
+  ].join("\n");
+
+  let state = load() || { started: false, raw: SAMPLE, items: [], orders: [] };
+  let view = "item";          // item | customer
+  let focus = null;           // {kind:'item'|'customer', key:string}
+  let pending = null;         // 貴重商品待確認的 order id
+  let openFlags = null;       // 正在展開標記列的商品 id
+
+  /* ---------- 儲存 ---------- */
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* 無痕模式等情況，不影響使用 */ }
+  }
+  function load() {
+    try {
+      const s = localStorage.getItem(KEY);
+      return s ? JSON.parse(s) : null;
+    } catch (e) { return null; }
+  }
+
+  /* ---------- 解析貼上的訂單 ---------- */
+  function parse(text) {
+    const items = [];
+    const orders = [];
+    const blocks = String(text).split(/\n\s*\n/);
+
+    blocks.forEach((block) => {
+      const lines = block.split("\n").map(clean).filter(Boolean);
+      if (lines.length < 2) return;
+
+      const name = lines[0];
+      const id = "i" + items.length;
+      items.push({ id: id, name: name, gem: false, warn: false });
+
+      lines.slice(1).forEach((line, n) => {
+        const parsed = splitQty(line);
+        if (!parsed.name) return;
+        orders.push({
+          id: id + "-" + n,
+          itemId: id,
+          who: parsed.name,
+          qty: parsed.qty,
+          done: false
+        });
+      });
+    });
+
+    return { items: items, orders: orders };
+  }
+
+  function clean(line) {
+    return line.replace(/^[\s　]*[-–—・•*]+[\s　]*/, "").trim();
+  }
+
+  // 「王小明 2」「王小明x2」「王小明 +2」「王小明」都看得懂
+  function splitQty(line) {
+    const m = line.match(/^(.*?)[\s　]*(?:[xX×*+＋]|共)?[\s　]*(\d+)[\s　]*(?:個|入|瓶|盒|組|支|罐|份|件)?$/);
+    if (m && m[1].trim()) return { name: m[1].trim(), qty: Math.max(1, parseInt(m[2], 10)) };
+    return { name: line.trim(), qty: 1 };
+  }
+
+  /* ---------- 小工具 ---------- */
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const itemOf = (id) => state.items.find((i) => i.id === id) || { name: "？", gem: false, warn: false };
+  const customers = () => [...new Set(state.orders.map((o) => o.who))];
+  const totalPieces = () => state.orders.reduce((n, o) => n + o.qty, 0);
+  const donePieces = () => state.orders.filter((o) => o.done).reduce((n, o) => n + o.qty, 0);
+
+  /* ---------- 畫面 ---------- */
+  function render() {
+    const app = document.getElementById("app");
+    document.getElementById("reset").hidden = !state.started;
+    document.getElementById("prog").hidden = !state.started;
+
+    if (state.started) {
+      const total = totalPieces();
+      const done = donePieces();
+      document.getElementById("progNum").textContent = done + " / " + total;
+      document.getElementById("progBar").style.width = (total ? (done / total) * 100 : 0) + "%";
+      app.innerHTML = workHTML();
+    } else {
+      app.innerHTML = setupHTML();
+    }
+    document.getElementById("overlay").innerHTML = focus ? focusHTML() : "";
+  }
+
+  function setupHTML() {
+    const guess = parse(state.raw);
+    const people = new Set(guess.orders.map((o) => o.who));
+    const pieces = guess.orders.reduce((n, o) => n + o.qty, 0);
+    const ok = guess.items.length > 0 && guess.orders.length > 0;
+
+    return `
+      <h1>一邊分，一邊打勾</h1>
+      <p class="lede">把 LINE 記事本的訂單<strong>整段貼進來</strong>，之後不管是「一次發一種商品」還是「幫某個人湊齊」，
+      <strong>兩邊的勾是同一個</strong> — 換來換去也不會漏掉或重複。</p>
+
+      <div class="field">
+        <label class="label" for="raw">訂單內容</label>
+        <textarea id="raw" spellcheck="false">${esc(state.raw)}</textarea>
+      </div>
+
+      <div class="tally">
+        <div><em>商品</em><b class="num">${guess.items.length}</b></div>
+        <div><em>客人</em><b class="num">${people.size}</b></div>
+        <div><em>總件數</em><b class="num">${pieces}</b></div>
+      </div>
+
+      <button class="go" id="start" ${ok ? "" : "disabled"}>開始分貨</button>
+      <p class="mini">
+        現在放的是範例 ·
+        <button class="linkish" id="clear">清空，換我自己的</button>
+      </p>
+
+      <div class="hint">
+        <b>格式很簡單：</b>第一行寫商品，下面每行一個客人，<b>空一行</b>換下一個商品。
+        數量沒寫就當 1 個。
+        <pre>愛馬仕 尼羅河花園 50ml
+王小明 1
+陳美美 2
+
+POLA 護手霜
+王小明 2</pre>
+      </div>`;
+  }
+
+  function workHTML() {
+    const all = state.orders.length > 0 && state.orders.every((o) => o.done);
+    const banner = all
+      ? `<div class="done-banner">全部分完了 🎉<small>${customers().length} 位客人 · 共 ${totalPieces()} 件，可以裝箱了</small></div>`
+      : "";
+
+    const tabs = `
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="${view === "item"}" data-view="item">照商品分</button>
+        <button role="tab" aria-selected="${view === "customer"}" data-view="customer">照客人對</button>
+      </div>`;
+
+    const cards = view === "item" ? itemCards() : customerCards();
+    return banner + tabs + `<div class="list">${cards}</div>`;
+  }
+
+  function itemCards() {
+    return state.items.map((item) => {
+      const os = state.orders.filter((o) => o.itemId === item.id);
+      const done = os.filter((o) => o.done).length;
+      const chips =
+        (item.gem ? '<span class="chip gem">💎 貴重</span>' : "") +
+        (item.warn ? '<span class="chip warn">⚠️ 容易拿錯</span>' : "");
+
+      const flags = openFlags === item.id ? `
+        <div class="flagbar">
+          <button class="gem" data-flag="gem" data-id="${item.id}" aria-pressed="${item.gem}">💎 貴重，勾要再確認</button>
+          <button class="warn" data-flag="warn" data-id="${item.id}" aria-pressed="${item.warn}">⚠️ 容易拿錯</button>
+        </div>` : "";
+
+      return `
+        <div class="group">
+          <button class="card ${done === os.length ? "done" : ""}" data-open="item" data-key="${item.id}">
+            <span class="card-name">${esc(item.name)}</span>
+            <span class="card-count num">${done} / ${os.length}</span>
+            <span class="card-sub">${os.length} 位客人 · 共 ${os.reduce((n, o) => n + o.qty, 0)} 件</span>
+            ${chips ? `<span class="chips">${chips}</span>` : ""}
+          </button>
+          ${flags}
+          <button class="ghost tiny" data-toggleflag="${item.id}">
+            ${openFlags === item.id ? "收起" : "標記貴重 / 容易拿錯"}
+          </button>
+        </div>`;
+    }).join("");
+  }
+
+  function customerCards() {
+    return customers().map((who) => {
+      const os = state.orders.filter((o) => o.who === who);
+      const done = os.filter((o) => o.done).length;
+      return `
+        <button class="card ${done === os.length ? "done" : ""}" data-open="customer" data-key="${esc(who)}">
+          <span class="card-name">${esc(who)}</span>
+          <span class="card-count num">${done} / ${os.length}</span>
+          <span class="card-sub">${os.length} 樣 · 共 ${os.reduce((n, o) => n + o.qty, 0)} 件</span>
+        </button>`;
+    }).join("");
+  }
+
+  function focusHTML() {
+    const byItem = focus.kind === "item";
+    const os = byItem
+      ? state.orders.filter((o) => o.itemId === focus.key)
+      : state.orders.filter((o) => o.who === focus.key);
+
+    const item = byItem ? itemOf(focus.key) : null;
+    const title = byItem ? item.name : focus.key;
+
+    let alerts = "";
+    if (byItem && item.warn) alerts += `<div class="alert">⚠️ 這個容易拿錯 — 放進袋子前再看一次盒子</div>`;
+    if (byItem && item.gem) alerts += `<div class="alert gem">💎 貴重商品 — 每一筆都要再按一次確認</div>`;
+
+    const rows = os.map((o) => {
+      const gem = byItem ? item.gem : itemOf(o.itemId).gem;
+      const label = byItem ? o.who : itemOf(o.itemId).name;
+
+      if (pending === o.id) {
+        return `
+          <div class="confirm">
+            <p>確定給「${esc(label)}」${o.qty} 個？</p>
+            <div>
+              <button class="no" data-cancel="1">還沒</button>
+              <button class="yes" data-confirm="${o.id}">確定，打勾</button>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <button class="row ${o.done ? "done" : ""}" data-tick="${o.id}" data-gem="${gem ? 1 : 0}">
+          <span class="box">✓</span>
+          <span class="row-name">${esc(label)}</span>
+          <span class="row-qty num">×${o.qty}</span>
+        </button>`;
+    }).join("");
+
+    return `
+      <div class="focus">
+        <div class="focus-head">
+          <div class="focus-eyebrow">${byItem ? "這一種商品，發給這些人" : "這位客人，要拿這些"}</div>
+          <div class="focus-title">${esc(title)}</div>
+          ${alerts}
+        </div>
+        <div class="focus-body">${rows}</div>
+        <div class="focus-foot"><button data-close="1">回清單</button></div>
+      </div>`;
+  }
+
+  /* ---------- 互動 ---------- */
+  document.addEventListener("click", (e) => {
+    const hit = (sel) => e.target.closest(sel);
+
+    if (hit("#start")) {
+      const raw = document.getElementById("raw").value;
+      const parsed = parse(raw);
+      if (!parsed.items.length) return;
+      state = { started: true, raw: raw, items: parsed.items, orders: parsed.orders };
+      save(); render(); return;
+    }
+
+    if (hit("#clear")) {
+      state.raw = "";
+      save(); render();
+      const t = document.getElementById("raw");
+      if (t) { t.value = ""; t.focus(); }
+      return;
+    }
+
+    if (hit("#reset")) {
+      state.started = false;
+      focus = null; pending = null; openFlags = null;
+      save(); render(); return;
+    }
+
+    const tab = hit("[data-view]");
+    if (tab) { view = tab.dataset.view; render(); return; }
+
+    const flagToggle = hit("[data-toggleflag]");
+    if (flagToggle) {
+      openFlags = openFlags === flagToggle.dataset.toggleflag ? null : flagToggle.dataset.toggleflag;
+      render(); return;
+    }
+
+    const flag = hit("[data-flag]");
+    if (flag) {
+      const item = itemOf(flag.dataset.id);
+      item[flag.dataset.flag] = !item[flag.dataset.flag];
+      save(); render(); return;
+    }
+
+    const open = hit("[data-open]");
+    if (open) {
+      focus = { kind: open.dataset.open, key: open.dataset.key };
+      pending = null;
+      render(); return;
+    }
+
+    if (hit("[data-close]")) { focus = null; pending = null; render(); return; }
+
+    const tick = hit("[data-tick]");
+    if (tick) {
+      const o = state.orders.find((x) => x.id === tick.dataset.tick);
+      if (!o) return;
+      // 貴重商品還沒打勾時，要再確認一次；取消勾選不用確認
+      if (!o.done && tick.dataset.gem === "1") { pending = o.id; render(); return; }
+      o.done = !o.done;
+      save(); render(); return;
+    }
+
+    const yes = hit("[data-confirm]");
+    if (yes) {
+      const o = state.orders.find((x) => x.id === yes.dataset.confirm);
+      if (o) o.done = true;
+      pending = null;
+      save(); render(); return;
+    }
+
+    if (hit("[data-cancel]")) { pending = null; render(); return; }
+  });
+
+  document.addEventListener("input", (e) => {
+    if (e.target.id === "raw") {
+      state.raw = e.target.value;
+      const sel = e.target.selectionStart;
+      save();
+      // 只更新統計，不重畫整個輸入框
+      const g = parse(state.raw);
+      const people = new Set(g.orders.map((o) => o.who));
+      const tally = document.querySelectorAll(".tally b");
+      if (tally.length === 3) {
+        tally[0].textContent = g.items.length;
+        tally[1].textContent = people.size;
+        tally[2].textContent = g.orders.reduce((n, o) => n + o.qty, 0);
+      }
+      const start = document.getElementById("start");
+      if (start) start.disabled = !(g.items.length && g.orders.length);
+      e.target.selectionStart = e.target.selectionEnd = sel;
+    }
+  });
+
+  render();
+</script>
